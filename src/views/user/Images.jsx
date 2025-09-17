@@ -11,123 +11,133 @@ const Images = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'masonry'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'masonry'
   const [showLightbox, setShowLightbox] = useState(false);
-  
+
   const { isFavorite, toggleFavorite } = useFavorites();
 
   // Mock data para imágenes
   const imageData = {
     categories: [
-      { id: 'all', name: 'Todas', icon: 'fas fa-list' },
-      { id: 'pizzas', name: 'Pizzas', icon: 'fas fa-pizza-slice' },
-      { id: 'restaurant', name: 'Restaurante', icon: 'fas fa-utensils' },
-      { id: 'team', name: 'Equipo', icon: 'fas fa-users' },
+      { id: 'all', name: 'Todas', icon: 'fas fa-images' },
+      { id: 'food', name: 'Comida', icon: 'fas fa-utensils' },
+      { id: 'restaurant', name: 'Restaurante', icon: 'fas fa-store' },
       { id: 'events', name: 'Eventos', icon: 'fas fa-calendar' },
-      { id: 'ingredients', name: 'Ingredientes', icon: 'fas fa-leaf' }
+      { id: 'team', name: 'Equipo', icon: 'fas fa-users' },
+      { id: 'process', name: 'Proceso', icon: 'fas fa-cogs' }
     ],
     images: [
       {
         id: 1,
         title: 'Pizza Margarita Artesanal',
-        description: 'Nuestra pizza más popular con mozzarella fresca, tomate y albahaca',
-        category: 'pizzas',
+        description: 'Nuestra clásica pizza margarita recién salida del horno con ingredientes frescos',
+        category: 'food',
         url: '/gallery/pizza-margarita-1.jpg',
-        thumbnail: '/gallery/thumbs/pizza-margarita-1.jpg',
-        width: 1200,
-        height: 800,
-        size: 245678,
+        thumbnail: '/gallery/thumbs/pizza-margarita-1-thumb.jpg',
         uploadDate: '2024-01-15',
-        photographer: 'Carlos Mendoza',
-        tags: ['pizza', 'margarita', 'mozzarella', 'albahaca'],
+        photographer: 'Chef Mario',
+        tags: ['pizza', 'margarita', 'artesanal', 'italiano'],
         featured: true,
-        likes: 156,
-        views: 2340
+        likes: 245,
+        views: 1534
       },
       {
         id: 2,
         title: 'Interior del Restaurante',
-        description: 'Ambiente acogedor y familiar en nuestra sucursal principal',
+        description: 'Vista panorámica de nuestro acogedor comedor con decoración italiana',
         category: 'restaurant',
-        url: '/gallery/restaurant-interior-1.jpg',
-        thumbnail: '/gallery/thumbs/restaurant-interior-1.jpg',
-        width: 1600,
-        height: 1067,
-        size: 892345,
-        uploadDate: '2024-01-14',
-        photographer: 'Ana Gutierrez',
-        tags: ['restaurante', 'interior', 'ambiente', 'decoracion'],
+        url: '/gallery/interior-1.jpg',
+        thumbnail: '/gallery/thumbs/interior-1-thumb.jpg',
+        uploadDate: '2024-01-12',
+        photographer: 'Ana Torres',
+        tags: ['interior', 'decoración', 'ambiente', 'comodidad'],
         featured: false,
         likes: 89,
-        views: 1456
+        views: 567
       },
       {
         id: 3,
-        title: 'Nuestro Chef Principal',
-        description: 'Marco Rivera, chef con 15 años de experiencia en cocina italiana',
-        category: 'team',
-        url: '/gallery/chef-marco.jpg',
-        thumbnail: '/gallery/thumbs/chef-marco.jpg',
-        width: 800,
-        height: 1200,
-        size: 456789,
-        uploadDate: '2024-01-13',
-        photographer: 'Luis Torres',
-        tags: ['chef', 'equipo', 'cocina', 'profesional'],
+        title: 'Pasta Carbonara Premium',
+        description: 'Deliciosa pasta carbonara con ingredientes premium y presentación elegante',
+        category: 'food',
+        url: '/gallery/pasta-carbonara-1.jpg',
+        thumbnail: '/gallery/thumbs/pasta-carbonara-1-thumb.jpg',
+        uploadDate: '2024-01-10',
+        photographer: 'Chef Mario',
+        tags: ['pasta', 'carbonara', 'premium', 'cremosa'],
         featured: true,
-        likes: 203,
-        views: 3421
+        likes: 178,
+        views: 892
       },
       {
         id: 4,
-        title: 'Ingredientes Frescos',
-        description: 'Seleccionamos solo los mejores ingredientes para nuestras pizzas',
-        category: 'ingredients',
-        url: '/gallery/fresh-ingredients.jpg',
-        thumbnail: '/gallery/thumbs/fresh-ingredients.jpg',
-        width: 1400,
-        height: 933,
-        size: 678912,
-        uploadDate: '2024-01-12',
-        photographer: 'Maria Silva',
-        tags: ['ingredientes', 'frescos', 'calidad', 'verduras'],
+        title: 'Noche Italiana Especial',
+        description: 'Fotos del evento especial "Noche Italiana" con música en vivo',
+        category: 'events',
+        url: '/gallery/evento-italiano-1.jpg',
+        thumbnail: '/gallery/thumbs/evento-italiano-1-thumb.jpg',
+        uploadDate: '2024-01-08',
+        photographer: 'Luis Mendoza',
+        tags: ['evento', 'noche italiana', 'música', 'celebración'],
         featured: false,
-        likes: 124,
-        views: 1876
+        likes: 134,
+        views: 445
       },
       {
         id: 5,
-        title: 'Evento Noche Italiana',
-        description: 'Memorable noche italiana con música en vivo y platos especiales',
-        category: 'events',
-        url: '/gallery/italian-night.jpg',
-        thumbnail: '/gallery/thumbs/italian-night.jpg',
-        width: 1920,
-        height: 1280,
-        size: 1234567,
-        uploadDate: '2024-01-10',
-        photographer: 'Pedro Vargas',
-        tags: ['evento', 'italiana', 'musica', 'especial'],
-        featured: true,
-        likes: 267,
-        views: 4567
+        title: 'Equipo de Cocina',
+        description: 'Nuestro talentoso equipo de cocina preparando las mejores pizzas',
+        category: 'team',
+        url: '/gallery/equipo-cocina-1.jpg',
+        thumbnail: '/gallery/thumbs/equipo-cocina-1-thumb.jpg',
+        uploadDate: '2024-01-05',
+        photographer: 'Ana Torres',
+        tags: ['equipo', 'cocina', 'chefs', 'profesionales'],
+        featured: false,
+        likes: 67,
+        views: 234
       },
       {
         id: 6,
-        title: 'Pizza Pepperoni Premium',
-        description: 'Pepperoni de la más alta calidad sobre base de tomate y mozzarella',
-        category: 'pizzas',
-        url: '/gallery/pizza-pepperoni.jpg',
-        thumbnail: '/gallery/thumbs/pizza-pepperoni.jpg',
-        width: 1300,
-        height: 867,
-        size: 567890,
-        uploadDate: '2024-01-09',
-        photographer: 'Carlos Mendoza',
-        tags: ['pizza', 'pepperoni', 'premium', 'calidad'],
+        title: 'Preparación de Masa',
+        description: 'El proceso artesanal de preparación de nuestra masa de pizza',
+        category: 'process',
+        url: '/gallery/masa-preparacion-1.jpg',
+        thumbnail: '/gallery/thumbs/masa-preparacion-1-thumb.jpg',
+        uploadDate: '2024-01-03',
+        photographer: 'Chef Mario',
+        tags: ['masa', 'preparación', 'artesanal', 'proceso'],
+        featured: true,
+        likes: 201,
+        views: 678
+      },
+      {
+        id: 7,
+        title: 'Ensalada César Fresca',
+        description: 'Ensalada césar con ingredientes frescos y aderezo casero',
+        category: 'food',
+        url: '/gallery/ensalada-cesar-1.jpg',
+        thumbnail: '/gallery/thumbs/ensalada-cesar-1-thumb.jpg',
+        uploadDate: '2024-01-01',
+        photographer: 'Ana Torres',
+        tags: ['ensalada', 'césar', 'fresca', 'saludable'],
         featured: false,
-        likes: 178,
-        views: 2890
+        likes: 98,
+        views: 345
+      },
+      {
+        id: 8,
+        title: 'Terraza Al Aire Libre',
+        description: 'Nuestra hermosa terraza para disfrutar al aire libre',
+        category: 'restaurant',
+        url: '/gallery/terraza-1.jpg',
+        thumbnail: '/gallery/thumbs/terraza-1-thumb.jpg',
+        uploadDate: '2023-12-28',
+        photographer: 'Luis Mendoza',
+        tags: ['terraza', 'aire libre', 'ambiente', 'relajante'],
+        featured: false,
+        likes: 123,
+        views: 456
       }
     ]
   };
@@ -149,6 +159,8 @@ const Images = () => {
           return b.likes - a.likes;
         case 'views':
           return b.views - a.views;
+        case 'alphabetical':
+          return a.title.localeCompare(b.title);
         case 'newest':
         default:
           return new Date(b.uploadDate) - new Date(a.uploadDate);
@@ -163,14 +175,6 @@ const Images = () => {
       month: 'long',
       day: 'numeric'
     });
-  };
-
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const formatViews = (views) => {
@@ -199,34 +203,25 @@ const Images = () => {
     setSelectedImage(null);
   };
 
-  const navigateImage = (direction) => {
+  const navigateLightbox = (direction) => {
     const currentIndex = filteredImages.findIndex(img => img.id === selectedImage.id);
     let newIndex;
     
     if (direction === 'next') {
-      newIndex = currentIndex === filteredImages.length - 1 ? 0 : currentIndex + 1;
+      newIndex = currentIndex < filteredImages.length - 1 ? currentIndex + 1 : 0;
     } else {
-      newIndex = currentIndex === 0 ? filteredImages.length - 1 : currentIndex - 1;
+      newIndex = currentIndex > 0 ? currentIndex - 1 : filteredImages.length - 1;
     }
     
     setSelectedImage(filteredImages[newIndex]);
   };
 
-  const downloadImage = (image) => {
-    const link = document.createElement('a');
-    link.href = image.url;
-    link.download = `${image.title.replace(/\s+/g, '-').toLowerCase()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <>
       <SEO 
-        title="Galería de Imágenes - Pizza4U"
-        description="Explora nuestra galería de imágenes con fotos de nuestras deliciosas pizzas, restaurante, equipo y eventos especiales."
-        keywords="galería, fotos, imágenes, pizzas, restaurante, equipo, eventos"
+        title="Galería - Pizza4U"
+        description="Explora nuestra galería de imágenes con deliciosas pizzas, ambiente acogedor y momentos especiales en Pizza4U."
+        keywords="galería, imágenes, pizza, restaurante, comida, ambiente, eventos"
       />
       
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -237,7 +232,7 @@ const Images = () => {
               Galería de Imágenes
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Descubre el mundo visual de Pizza4U a través de nuestras fotografías
+              Descubre el mundo visual de Pizza4U a través de nuestras imágenes
             </p>
           </div>
 
@@ -255,7 +250,7 @@ const Images = () => {
                     className="overflow-hidden cursor-pointer group"
                     onClick={() => handleImageClick(image)}
                   >
-                    <div className="relative">
+                    <div className="relative aspect-w-16 aspect-h-12">
                       <img
                         src={image.thumbnail}
                         alt={image.title}
@@ -264,48 +259,37 @@ const Images = () => {
                           e.target.src = '/placeholder-image.jpg';
                         }}
                       />
-                      
-                      {/* Overlay */}
                       <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="text-white text-center">
-                          <i className="fas fa-search-plus text-2xl mb-2" />
-                          <p className="text-sm">Ver imagen</p>
+                        <div className="bg-white bg-opacity-90 rounded-full p-3">
+                          <i className="fas fa-search-plus text-gray-700 text-lg" />
                         </div>
                       </div>
-
-                      {/* Featured Badge */}
                       <div className="absolute top-2 left-2">
                         <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded">
                           Destacada
                         </span>
                       </div>
-
-                      {/* Favorite Button */}
                       <div className="absolute top-2 right-2">
                         <FavoriteButton
                           itemId={image.id}
                           itemType="images"
                           isFavorite={isFavorite(image.id, 'images')}
-                          onToggle={(e) => {
-                            e.stopPropagation();
-                            handleFavoriteToggle(image);
-                          }}
+                          onToggle={() => handleFavoriteToggle(image)}
                           variant="button"
                           className="bg-white bg-opacity-90 hover:bg-opacity-100"
                         />
                       </div>
                     </div>
-
                     <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                         {image.title}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
                         {image.description}
                       </p>
-                      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                        <span>{formatViews(image.views)} vistas</span>
+                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                         <span>{image.likes} me gusta</span>
+                        <span>{formatDate(image.uploadDate)}</span>
                       </div>
                     </div>
                   </Card>
@@ -357,29 +341,32 @@ const Images = () => {
                 <option value="oldest">Más antiguos</option>
                 <option value="popular">Más populares</option>
                 <option value="views">Más vistas</option>
+                <option value="alphabetical">Alfabético</option>
               </select>
 
               {/* View Mode */}
               <div className="flex rounded-lg border dark:border-gray-600 overflow-hidden">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`px-3 py-2 text-sm transition-colors ${
+                  className={`px-4 py-2 text-sm transition-colors ${
                     viewMode === 'grid'
                       ? 'bg-primary-500 text-white'
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <i className="fas fa-th" />
+                  <i className="fas fa-th mr-2" />
+                  Cuadrícula
                 </button>
                 <button
                   onClick={() => setViewMode('masonry')}
-                  className={`px-3 py-2 text-sm transition-colors ${
+                  className={`px-4 py-2 text-sm transition-colors ${
                     viewMode === 'masonry'
                       ? 'bg-primary-500 text-white'
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <i className="fas fa-th-large" />
+                  <i className="fas fa-th-large mr-2" />
+                  Mosaico
                 </button>
               </div>
             </div>
@@ -399,16 +386,14 @@ const Images = () => {
           ) : (
             <div className={`${
               viewMode === 'masonry' 
-                ? 'columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6' 
-                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+                ? 'columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6' 
+                : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
             }`}>
               {filteredImages.map((image) => (
                 <Card 
                   key={image.id} 
                   hover 
-                  className={`overflow-hidden cursor-pointer group ${
-                    viewMode === 'masonry' ? 'mb-6 break-inside-avoid' : ''
-                  }`}
+                  className={`overflow-hidden cursor-pointer group ${viewMode === 'masonry' ? 'break-inside-avoid mb-6' : ''}`}
                   onClick={() => handleImageClick(image)}
                 >
                   <div className="relative">
@@ -422,10 +407,9 @@ const Images = () => {
                     />
                     
                     {/* Overlay */}
-                    <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <div className="text-white text-center">
-                        <i className="fas fa-search-plus text-xl mb-1" />
-                        <p className="text-xs">Ver imagen</p>
+                    <div className="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="bg-white bg-opacity-90 rounded-full p-3">
+                        <i className="fas fa-search-plus text-gray-700" />
                       </div>
                     </div>
 
@@ -450,20 +434,43 @@ const Images = () => {
                         className="bg-white bg-opacity-90 hover:bg-opacity-100"
                       />
                     </div>
+
+                    {/* Stats */}
+                    <div className="absolute bottom-2 left-2 right-2 flex justify-between text-white text-xs">
+                      <span className="bg-black bg-opacity-50 px-2 py-1 rounded">
+                        <i className="fas fa-heart mr-1" />
+                        {image.likes}
+                      </span>
+                      <span className="bg-black bg-opacity-50 px-2 py-1 rounded">
+                        <i className="fas fa-eye mr-1" />
+                        {formatViews(image.views)}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="p-3">
-                    <h4 className="font-medium text-gray-900 dark:text-white mb-1 text-sm line-clamp-1">
+                  <div className="p-4">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">
                       {image.title}
-                    </h4>
-                    <p className="text-gray-600 dark:text-gray-400 text-xs mb-2 line-clamp-2">
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
                       {image.description}
                     </p>
                     
-                    {/* Stats */}
                     <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                      <span>{formatViews(image.views)} vistas</span>
-                      <span>{image.likes} ❤️</span>
+                      <span>Por {image.photographer}</span>
+                      <span>{formatDate(image.uploadDate)}</span>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {image.tags.slice(0, 2).map((tag, index) => (
+                        <span
+                          key={index}
+                          className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </Card>
@@ -485,15 +492,15 @@ const Images = () => {
         <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
           {/* Navigation */}
           <button
-            onClick={() => navigateImage('prev')}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 text-2xl p-2 z-10"
+            onClick={() => navigateLightbox('prev')}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 text-2xl p-2"
           >
             <i className="fas fa-chevron-left" />
           </button>
           
           <button
-            onClick={() => navigateImage('next')}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 text-2xl p-2 z-10"
+            onClick={() => navigateLightbox('next')}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 text-2xl p-2"
           >
             <i className="fas fa-chevron-right" />
           </button>
@@ -501,71 +508,38 @@ const Images = () => {
           {/* Close Button */}
           <button
             onClick={closeLightbox}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl p-2 z-10"
+            className="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl p-2"
           >
             <i className="fas fa-times" />
           </button>
 
           {/* Image Container */}
-          <div className="max-w-6xl max-h-full mx-4 flex flex-col">
-            <div className="flex-1 flex items-center justify-center mb-4">
-              <img
-                src={selectedImage.url}
-                alt={selectedImage.title}
-                className="max-w-full max-h-full object-contain"
-                onError={(e) => {
-                  e.target.src = selectedImage.thumbnail;
-                }}
-              />
-            </div>
-
+          <div className="max-w-7xl max-h-full p-4 flex flex-col items-center">
+            <img
+              src={selectedImage.url}
+              alt={selectedImage.title}
+              className="max-w-full max-h-[80vh] object-contain"
+              onError={(e) => {
+                e.target.src = selectedImage.thumbnail;
+              }}
+            />
+            
             {/* Image Info */}
-            <div className="bg-black bg-opacity-50 text-white p-4 rounded-lg">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold mb-1">{selectedImage.title}</h3>
-                  <p className="text-gray-300 text-sm mb-2">{selectedImage.description}</p>
-                </div>
-                
-                <div className="flex space-x-2 ml-4">
-                  <FavoriteButton
-                    itemId={selectedImage.id}
-                    itemType="images"
-                    isFavorite={isFavorite(selectedImage.id, 'images')}
-                    onToggle={() => handleFavoriteToggle(selectedImage)}
-                    variant="button"
-                    className="bg-white bg-opacity-20 hover:bg-opacity-30"
-                  />
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => downloadImage(selectedImage)}
-                    icon="fas fa-download"
-                    className="text-white hover:bg-white hover:bg-opacity-20"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-gray-300">
-                <div>
-                  <span className="block text-gray-400">Fotógrafo</span>
-                  <span>{selectedImage.photographer}</span>
-                </div>
-                <div>
-                  <span className="block text-gray-400">Fecha</span>
-                  <span>{formatDate(selectedImage.uploadDate)}</span>
-                </div>
-                <div>
-                  <span className="block text-gray-400">Dimensiones</span>
-                  <span>{selectedImage.width} x {selectedImage.height}</span>
-                </div>
-                <div>
-                  <span className="block text-gray-400">Tamaño</span>
-                  <span>{formatFileSize(selectedImage.size)}</span>
-                </div>
+            <div className="mt-4 text-center text-white max-w-2xl">
+              <h2 className="text-xl font-bold mb-2">{selectedImage.title}</h2>
+              <p className="text-gray-300 mb-2">{selectedImage.description}</p>
+              <div className="flex items-center justify-center space-x-4 text-sm text-gray-400">
+                <span>Por {selectedImage.photographer}</span>
+                <span>{formatDate(selectedImage.uploadDate)}</span>
+                <span>{selectedImage.likes} me gusta</span>
+                <span>{formatViews(selectedImage.views)} vistas</span>
               </div>
             </div>
+          </div>
+
+          {/* Keyboard Navigation Hint */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-gray-400 text-sm">
+            Usa las flechas del teclado para navegar • ESC para cerrar
           </div>
         </div>
       )}
