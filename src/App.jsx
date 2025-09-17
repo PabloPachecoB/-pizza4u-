@@ -1,30 +1,188 @@
-import { useState } from 'react'
-//import reactLogo from './assets/react.svg'
-//import viteLogo from '/vite.svg'
-import './App.css'
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Contexts
+import { ThemeProvider } from './context/ThemeContext';
+import { NotificationProvider } from './context/NotificationContext';
+import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
+import { FavoritesProvider } from './context/FavoritesContext';
+import { AppProvider } from './context/AppContext';
 
+// Components
+import SEO from './components/SEO';
+import LoadingSpinner from './components/LoadingSpinner';
+
+// Lazy-loaded views
+const HomeView = React.lazy(() => import('./views/user/Home'));
+const MenuView = React.lazy(() => import('./views/user/Menu'));
+const LocationView = React.lazy(() => import('./views/user/Location'));
+const VideosView = React.lazy(() => import('./views/user/Videos'));
+const ImagesView = React.lazy(() => import('./views/user/Images'));
+const PodcastsView = React.lazy(() => import('./views/user/Podcasts'));
+const CartView = React.lazy(() => import('./views/user/Cart'));
+const CheckoutView = React.lazy(() => import('./views/user/Checkout'));
+const FavoritesView = React.lazy(() => import('./views/user/Favorites'));
+const OrderHistoryView = React.lazy(() => import('./views/user/OrderHistory'));
+const NewsView = React.lazy(() => import('./views/user/News'));
+
+// Admin views (lazy-loaded)
+const AdminDashboard = React.lazy(() => import('./views/admin/Dashboard'));
+const AdminOrders = React.lazy(() => import('./views/admin/Orders'));
+const AdminMenuEditor = React.lazy(() => import('./views/admin/MenuEditor'));
+const AdminVideoUpload = React.lazy(() => import('./views/admin/VideoUpload'));
+const AdminImageUpload = React.lazy(() => import('./views/admin/ImageUpload'));
+const AdminUserManagement = React.lazy(() => import('./views/admin/UserManagement'));
+const AdminAnalytics = React.lazy(() => import('./views/admin/Analytics'));
+const AdminContentScheduler = React.lazy(() => import('./views/admin/ContentScheduler'));
+const AdminSendNotification = React.lazy(() => import('./views/admin/SendNotification'));
+
+// Layout components
+import Header from './components/Header';
+import Footer from './components/Footer';
+import LoginModal from './components/LoginModal';
+import CartSidebar from './components/CartSidebar';
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, user } = useAuth();
+  
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+};
+
+// Loading component
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div className="text-center">
+      <i className="fas fa-spinner fa-spin text-4xl text-primary-500 mb-4" />
+      <p className="text-gray-600 dark:text-gray-400">Cargando...</p>
+    </div>
+  </div>
+);
+
+// Main App Layout
+const AppLayout = ({ children, variant = 'user' }) => {
   return (
-    
-      <div>
-        <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-    <a href="#">
-        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Noteworthy technology acquisitions 2021</h5>
-    </a>
-    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Here are the biggest enterprise technology acquisitions of 2021 so far, in reverse chronological order.</p>
-    <a href="#" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-        Read more
-        <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
-        </svg>
-    </a>
-</div>
-      
-      </div>
-      
-  )
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <Header variant={variant} />
+      <main className="pt-16">
+        {children}
+      </main>
+      <Footer variant={variant} />
+      <LoginModal />
+      <CartSidebar />
+    </div>
+  );
+};
+
+// User Routes Component
+const UserRoutes = () => (
+  <AppLayout variant="user">
+    <Routes>
+      <Route path="/" element={<HomeView />} />
+      <Route path="/menu" element={<MenuView />} />
+      <Route path="/location" element={<LocationView />} />
+      <Route path="/videos" element={<VideosView />} />
+      <Route path="/images" element={<ImagesView />} />
+      <Route path="/podcasts" element={<PodcastsView />} />
+      <Route path="/cart" element={<CartView />} />
+      <Route path="/checkout" element={<CheckoutView />} />
+      <Route path="/favorites" element={<FavoritesView />} />
+      <Route path="/orders" element={<OrderHistoryView />} />
+      <Route path="/news" element={<NewsView />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  </AppLayout>
+);
+
+// Admin Routes Component
+const AdminRoutes = () => (
+  <AppLayout variant="admin">
+    <Routes>
+      <Route path="/admin" element={
+        <ProtectedRoute>
+          <AdminDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/orders" element={
+        <ProtectedRoute>
+          <AdminOrders />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/menu" element={
+        <ProtectedRoute>
+          <AdminMenuEditor />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/videos" element={
+        <ProtectedRoute>
+          <AdminVideoUpload />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/images" element={
+        <ProtectedRoute>
+          <AdminImageUpload />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/users" element={
+        <ProtectedRoute>
+          <AdminUserManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/analytics" element={
+        <ProtectedRoute>
+          <AdminAnalytics />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/scheduler" element={
+        <ProtectedRoute>
+          <AdminContentScheduler />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/notifications" element={
+        <ProtectedRoute>
+          <AdminSendNotification />
+        </ProtectedRoute>
+      } />
+      <Route path="*" element={<Navigate to="/admin" replace />} />
+    </Routes>
+  </AppLayout>
+);
+
+// Main App Component
+function App() {
+  return (
+    <ThemeProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <CartProvider>
+            <FavoritesProvider>
+              <AppProvider>
+                <Router>
+                  <SEO />
+                  <div id="app" className="antialiased">
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <Routes>
+                        {/* User Routes */}
+                        <Route path="/*" element={<UserRoutes />} />
+                        
+                        {/* Admin Routes */}
+                        <Route path="/admin/*" element={<AdminRoutes />} />
+                      </Routes>
+                    </Suspense>
+                  </div>
+                </Router>
+              </AppProvider>
+            </FavoritesProvider>
+          </CartProvider>
+        </AuthProvider>
+      </NotificationProvider>
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;
