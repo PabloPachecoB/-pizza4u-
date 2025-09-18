@@ -54,16 +54,6 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Loading component
-const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-    <div className="text-center">
-      <i className="fas fa-spinner fa-spin text-4xl text-primary-500 mb-4" />
-      <p className="text-gray-600 dark:text-gray-400">Cargando...</p>
-    </div>
-  </div>
-);
-
 // Main App Layout
 const AppLayout = ({ children, variant = 'user' }) => {
   return (
@@ -165,7 +155,7 @@ function App() {
                 <Router>
                   <SEO />
                   <div id="app" className="antialiased">
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<LoadingSpinner size="lg" variant="spinner" fullScreen />}>
                       <Routes>
                         {/* User Routes */}
                         <Route path="/*" element={<UserRoutes />} />
