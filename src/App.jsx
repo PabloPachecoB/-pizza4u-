@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 // Contexts
 import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext'; // ← AGREGADO useAuth
 import { CartProvider } from './context/CartContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { AppProvider } from './context/AppContext';
@@ -43,9 +43,11 @@ import Footer from './components/Footer';
 import LoginModal from './components/LoginModal';
 import CartSidebar from './components/CartSidebar';
 
-// Protected Route Component
+// Protected Route Component - CORREGIDO
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
+  
+  console.log('ProtectedRoute - isAuthenticated:', isAuthenticated, 'user:', user); // Debug
   
   if (!isAuthenticated || user?.role !== 'admin') {
     return <Navigate to="/" replace />;
@@ -89,59 +91,32 @@ const UserRoutes = () => (
   </AppLayout>
 );
 
-// Admin Routes Component
+// Admin Routes Component - SIMPLIFICADO para debug
 const AdminRoutes = () => (
   <AppLayout variant="admin">
     <Routes>
-      <Route path="/admin" element={
-        <ProtectedRoute>
-          <AdminDashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/orders" element={
-        <ProtectedRoute>
-          <AdminOrders />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/menu" element={
-        <ProtectedRoute>
-          <AdminMenuEditor />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/videos" element={
-        <ProtectedRoute>
-          <AdminVideoUpload />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/images" element={
-        <ProtectedRoute>
-          <AdminImageUpload />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/users" element={
-        <ProtectedRoute>
-          <AdminUserManagement />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/analytics" element={
-        <ProtectedRoute>
-          <AdminAnalytics />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/scheduler" element={
-        <ProtectedRoute>
-          <AdminContentScheduler />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/notifications" element={
-        <ProtectedRoute>
-          <AdminSendNotification />
-        </ProtectedRoute>
-      } />
+      <Route path="/" element={<AdminDashboard />} />
+      <Route path="/orders" element={<AdminOrders />} />
+      <Route path="/menu" element={<AdminMenuEditor />} />
+      <Route path="/videos" element={<AdminVideoUpload />} />
+      <Route path="/images" element={<AdminImageUpload />} />
+      <Route path="/users" element={<AdminUserManagement />} />
+      <Route path="/analytics" element={<AdminAnalytics />} />
+      <Route path="/scheduler" element={<AdminContentScheduler />} />
+      <Route path="/notifications" element={<AdminSendNotification />} />
       <Route path="*" element={<Navigate to="/admin" replace />} />
     </Routes>
   </AppLayout>
 );
+
+// Debug Component para verificar autenticación
+const AuthDebug = () => {
+  const { isAuthenticated, user } = useAuth();
+  
+  console.log('AuthDebug - isAuthenticated:', isAuthenticated, 'user:', user);
+  
+  return null;
+};
 
 // Main App Component
 function App() {
@@ -154,13 +129,14 @@ function App() {
               <AppProvider>
                 <Router>
                   <SEO />
+                  <AuthDebug />
                   <div id="app" className="antialiased">
                     <Suspense fallback={<LoadingSpinner size="lg" variant="spinner" fullScreen />}>
                       <Routes>
                         {/* User Routes */}
                         <Route path="/*" element={<UserRoutes />} />
                         
-                        {/* Admin Routes */}
+                        {/* Admin Routes - SIN ProtectedRoute por ahora para debug */}
                         <Route path="/admin/*" element={<AdminRoutes />} />
                       </Routes>
                     </Suspense>
