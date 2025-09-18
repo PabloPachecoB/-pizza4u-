@@ -89,11 +89,11 @@ const Button = ({
     >
       {loading && iconPosition === 'left' && <LoadingSpinner />}
       {icon && !loading && iconPosition === 'left' && (
-        <span className={`inline-flex ${iconClass} mr-2`}>{icon}</span>
+        <i className={`${icon} ${iconClass} mr-2`}></i>
       )}
       {children}
       {icon && !loading && iconPosition === 'right' && (
-        <span className={`inline-flex ${iconClass} ml-2`}>{icon}</span>
+        <i className={`${icon} ${iconClass} ml-2`}></i>
       )}
       {loading && iconPosition === 'right' && <LoadingSpinner />}
     </button>

@@ -138,52 +138,72 @@ const SearchBar = ({
     [onSearch, debounceMs]
   );
 
-  // Obtener sugerencias
-  const getSuggestions = useCallback(async (searchQuery) => {
-    if (!searchQuery || searchQuery.length < minChars) {
-      return [];
-    }
-
-    // Usar sugerencias personalizadas si están disponibles
-    if (customSuggestions) {
-      try {
-        return await customSuggestions(searchQuery);
-      } catch (error) {
-        console.error('Error getting custom suggestions:', error);
-        return [];
-      }
-    }
-
-    // Usar sugerencias proporcionadas
-    if (suggestions.length > 0) {
-      return suggestions
-        .filter(suggestion => 
-          suggestion.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .slice(0, maxSuggestions);
-    }
-
-    // Sugerencias del historial
-    if (showHistory) {
-      return searchHistory
-        .filter(historyItem => 
-          historyItem.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          historyItem.toLowerCase() !== searchQuery.toLowerCase()
-        )
-        .slice(0, maxSuggestions);
-    }
-
-    return [];
-  }, [suggestions, customSuggestions, searchHistory, minChars, maxSuggestions, showHistory]);
-
-  // Actualizar sugerencias cuando cambie la query
+  // Actualizar sugerencias - función inline para evitar dependencias problemáticas
   useEffect(() => {
-    if (query && isOpen) {
-      getSuggestions(query).then(setRecentSuggestions);
-    } else {
+    if (!query || !isOpen) {
       setRecentSuggestions([]);
+      return;
     }
-  }, [query, isOpen, getSuggestions]);
+
+    if (query.length < minChars) {
+      setRecentSuggestions([]);
+      return;
+    }
+
+    // Función de sugerencias inline - sin dependencias externas problemáticas
+    const fetchSuggestions = async () => {
+      try {
+        // Usar sugerencias personalizadas si están disponibles
+        if (customSuggestions) {
+          try {
+            const customResults = await customSuggestions(query);
+            setRecentSuggestions(customResults);
+            return;
+          } catch (error) {
+            console.error('Error getting custom suggestions:', error);
+          }
+        }
+
+        // Usar sugerencias proporcionadas
+        if (suggestions.length > 0) {
+          const filteredSuggestions = suggestions
+            .filter(suggestion => 
+              suggestion.toLowerCase().includes(query.toLowerCase())
+            )
+            .slice(0, maxSuggestions);
+          setRecentSuggestions(filteredSuggestions);
+          return;
+        }
+
+        // Obtener historial directamente desde localStorage
+        if (showHistory) {
+          try {
+            const savedHistory = localStorage.getItem('searchHistory');
+            const currentHistory = savedHistory ? JSON.parse(savedHistory) : [];
+            
+            const historyResults = currentHistory
+              .filter(historyItem => 
+                historyItem.toLowerCase().includes(query.toLowerCase()) &&
+                historyItem.toLowerCase() !== query.toLowerCase()
+              )
+              .slice(0, maxSuggestions);
+            
+            setRecentSuggestions(historyResults);
+            return;
+          } catch (error) {
+            console.error('Error reading search history:', error);
+          }
+        }
+
+        setRecentSuggestions([]);
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        setRecentSuggestions([]);
+      }
+    };
+
+    fetchSuggestions();
+  }, [query, isOpen]); // Solo dependencias primitivas estables
 
   // Manejar cambio en la query
   const handleQueryChange = (newQuery) => {
@@ -199,19 +219,26 @@ const SearchBar = ({
     }
   };
 
-  // Manejar búsqueda
-  const handleSearch = (searchQuery = query) => {
+  // Manejar búsqueda - SIN searchHistory en dependencias
+  const handleSearch = useCallback((searchQuery = query) => {
     if (!searchQuery.trim()) return;
 
-    // Agregar al historial
+    // Agregar al historial - obtener desde localStorage para evitar dependencias
     if (showHistory) {
-      const newHistory = [
-        searchQuery,
-        ...searchHistory.filter(item => item !== searchQuery)
-      ].slice(0, 10);
-      
-      setSearchHistory(newHistory);
-      localStorage.setItem('searchHistory', JSON.stringify(newHistory));
+      try {
+        const savedHistory = localStorage.getItem('searchHistory');
+        const currentHistory = savedHistory ? JSON.parse(savedHistory) : [];
+        
+        const newHistory = [
+          searchQuery,
+          ...currentHistory.filter(item => item !== searchQuery)
+        ].slice(0, 10);
+        
+        setSearchHistory(newHistory);
+        localStorage.setItem('searchHistory', JSON.stringify(newHistory));
+      } catch (error) {
+        console.error('Error saving search history:', error);
+      }
     }
 
     setIsOpen(false);
@@ -220,7 +247,7 @@ const SearchBar = ({
     if (onSearch) {
       onSearch(searchQuery);
     }
-  };
+  }, [query, showHistory, onSearch]);
 
   // Manejar teclas
   const handleKeyDown = (e) => {

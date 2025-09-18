@@ -1,1 +1,169 @@
 @import "tailwindcss";
+
+/* Añadir al final de src/index.css */
+
+:root {
+  /* Colores principales de pizzería - Rojo y Amarillo */
+  --color-primary-50: #fef2f2;
+  --color-primary-100: #fee2e2;
+  --color-primary-200: #fecaca;
+  --color-primary-300: #fca5a5;
+  --color-primary-400: #f87171;
+  --color-primary-500: #dc2626;  /* Rojo principal */
+  --color-primary-600: #b91c1c;
+  --color-primary-700: #991b1b;
+  --color-primary-800: #7f1d1d;
+  --color-primary-900: #450a0a;
+
+  /* Colores secundarios - Amarillo dorado */
+  --color-secondary-50: #fffbeb;
+  --color-secondary-100: #fef3c7;
+  --color-secondary-200: #fde68a;
+  --color-secondary-300: #fcd34d;
+  --color-secondary-400: #fbbf24;
+  --color-secondary-500: #f59e0b;  /* Amarillo principal */
+  --color-secondary-600: #d97706;
+  --color-secondary-700: #b45309;
+  --color-secondary-800: #92400e;
+  --color-secondary-900: #78350f;
+
+  /* Colores de acento - Naranja cálido */
+  --color-accent-500: #ea580c;
+  --color-accent-600: #c2410c;
+}
+
+/* Aplicar los nuevos colores */
+.bg-primary-50 { background-color: var(--color-primary-50); }
+.bg-primary-100 { background-color: var(--color-primary-100); }
+.bg-primary-500 { background-color: var(--color-primary-500); }
+.bg-primary-600 { background-color: var(--color-primary-600); }
+.bg-primary-700 { background-color: var(--color-primary-700); }
+.bg-primary-900 { background-color: var(--color-primary-900); }
+
+.bg-secondary-50 { background-color: var(--color-secondary-50); }
+.bg-secondary-100 { background-color: var(--color-secondary-100); }
+.bg-secondary-500 { background-color: var(--color-secondary-500); }
+.bg-secondary-600 { background-color: var(--color-secondary-600); }
+
+.text-primary-50 { color: var(--color-primary-50); }
+.text-primary-100 { color: var(--color-primary-100); }
+.text-primary-500 { color: var(--color-primary-500); }
+.text-primary-600 { color: var(--color-primary-600); }
+.text-primary-700 { color: var(--color-primary-700); }
+.text-primary-800 { color: var(--color-primary-800); }
+
+.text-secondary-500 { color: var(--color-secondary-500); }
+.text-secondary-600 { color: var(--color-secondary-600); }
+
+.border-primary-500 { border-color: var(--color-primary-500); }
+.border-secondary-500 { border-color: var(--color-secondary-500); }
+
+/* Hover states */
+.hover\:bg-primary-50:hover { background-color: var(--color-primary-50); }
+.hover\:bg-primary-600:hover { background-color: var(--color-primary-600); }
+.hover\:bg-primary-700:hover { background-color: var(--color-primary-700); }
+.hover\:bg-secondary-600:hover { background-color: var(--color-secondary-600); }
+
+.hover\:text-primary-600:hover { color: var(--color-primary-600); }
+.hover\:text-primary-700:hover { color: var(--color-primary-700); }
+
+/* Focus rings */
+.focus\:ring-primary-500:focus { 
+  --tw-ring-color: var(--color-primary-500);
+}
+.focus\:ring-secondary-500:focus { 
+  --tw-ring-color: var(--color-secondary-500);
+}
+
+/* Gradientes especiales para pizzería */
+.bg-pizza-gradient {
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%);
+}
+
+.bg-pizza-gradient-alt {
+  background: linear-gradient(135deg, var(--color-secondary-500) 0%, var(--color-accent-500) 100%);
+}
+
+/* Clases específicas para mejorar contraste */
+.pizza-hero-text {
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.pizza-card-title {
+  color: var(--color-primary-700);
+  font-weight: 700;
+}
+
+.pizza-price {
+  color: var(--color-secondary-600);
+  font-weight: 800;
+}
+
+/* Botones con mejor contraste */
+.btn-pizza-primary {
+  background-color: var(--color-primary-500);
+  color: white;
+  border: 2px solid var(--color-primary-500);
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.btn-pizza-primary:hover {
+  background-color: var(--color-primary-600);
+  border-color: var(--color-primary-600);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-pizza-secondary {
+  background-color: var(--color-secondary-500);
+  color: var(--color-primary-800);
+  border: 2px solid var(--color-secondary-500);
+  font-weight: 600;
+}
+
+.btn-pizza-secondary:hover {
+  background-color: var(--color-secondary-600);
+  border-color: var(--color-secondary-600);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-pizza-outline {
+  background-color: transparent;
+  color: var(--color-primary-500);
+  border: 2px solid var(--color-primary-500);
+  font-weight: 600;
+}
+
+.btn-pizza-outline:hover {
+  background-color: var(--color-primary-500);
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Sombras y efectos especiales */
+.pizza-shadow {
+  box-shadow: 0 10px 25px rgba(220, 38, 38, 0.15);
+}
+
+.pizza-shadow:hover {
+  box-shadow: 0 15px 35px rgba(220, 38, 38, 0.25);
+}
+
+/* Overlay para mejorar legibilidad en fondos */
+.text-overlay {
+  background: linear-gradient(to bottom, 
+    rgba(0, 0, 0, 0.4) 0%, 
+    rgba(0, 0, 0, 0.6) 100%);
+  color: white;
+}
+
+/* Dark mode adjustments */
+.dark .pizza-card-title {
+  color: var(--color-primary-300);
+}
+
+.dark .pizza-price {
+  color: var(--color-secondary-300);}

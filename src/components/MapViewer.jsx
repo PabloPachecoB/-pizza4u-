@@ -11,7 +11,7 @@ const MapViewer = ({
   showInfoWindow = true,
   markers = [],
   onMarkerClick,
-  apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'your-api-key-here'
+  apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'your-api-key-here'
 }) => {
   const [map, setMap] = useState(null);
   const [selectedMarker, setSelectedMarker] = useState(null);
