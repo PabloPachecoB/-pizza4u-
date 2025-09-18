@@ -1,5 +1,5 @@
 // API configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const API_TIMEOUT = 10000;
 
 // API endpoints
@@ -318,7 +318,7 @@ export const mockApi = {
 
   // Override API methods for development
   init() {
-    if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_USE_REAL_API) {
+    if (import.meta.env.MODE === 'development' && !import.meta.env.VITE_USE_REAL_API) {
       // Replace real API calls with mock ones
       api.auth.login = async (credentials) => {
         await this.delay(1000);
@@ -363,4 +363,4 @@ export const interceptors = {
 // Initialize mock API if needed
 mockApi.init();
 
-export default api;
+export default api
