@@ -10,6 +10,7 @@ import MenuSection from '../components/website/MenuSection';
 import AboutSection from '../components/website/AboutSection';
 import ContactSection from '../components/website/ContactSection';
 
+
 const WebsiteView = ({ onSwitchToAdmin }) => {
   const [currentSection, setCurrentSection] = useState('inicio');
 

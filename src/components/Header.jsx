@@ -192,17 +192,19 @@ const Header = ({ variant = 'user' }) => {
                 </button>
               )}
 
-              {/* Admin/User Switch */}
-              {isAuthenticated && user?.role === 'admin' && (
-                <div className="hidden sm:block">
-                  {variant === 'user' ? (
+              {/* Admin Access Button - SIEMPRE VISIBLE */}
+              <div className="block">
+                {isAuthenticated && user?.role === 'admin' ? (
+                  // Usuario admin logueado
+                  variant === 'user' ? (
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant="secondary"
+                      size="md"
                       onClick={switchToAdmin}
                       icon="fas fa-cog"
+                      className="pizza-btn-primary"
                     >
-                      Admin
+                      ADMIN
                     </Button>
                   ) : (
                     <Button
@@ -213,9 +215,20 @@ const Header = ({ variant = 'user' }) => {
                     >
                       Sitio Web
                     </Button>
-                  )}
-                </div>
-              )}
+                  )
+                ) : (
+    // Acceso directo al admin (sin estar logueado)
+    <Button
+      variant="secondary"
+      size="md"
+      onClick={() => navigate('/admin')}
+      icon="fas fa-cog"
+      className="pizza-btn-primary"
+    >
+      ADMIN
+    </Button>
+  )}
+</div>
 
               {/* User Menu */}
               <div className="relative user-menu">
@@ -342,15 +355,16 @@ const Header = ({ variant = 'user' }) => {
               ))}
 
               {/* Mobile Admin/User Switch */}
-              {isAuthenticated && user?.role === 'admin' && (
-                <button
-                  onClick={variant === 'user' ? switchToAdmin : switchToUser}
-                  className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
-                >
-                  <i className={`fas ${variant === 'user' ? 'fa-cog' : 'fa-store'}`} />
-                  <span>{variant === 'user' ? 'Panel Admin' : 'Sitio Web'}</span>
-                </button>
-              )}
+                {isAuthenticated && user?.role === 'admin' && (
+                  <button
+                    onClick={variant === 'user' ? switchToAdmin : switchToUser}
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                  >
+                    <i className={`fas ${variant === 'user' ? 'fa-cog' : 'fa-store'}`} />
+                    <span>{variant === 'user' ? 'Panel Admin' : 'Sitio Web'}</span>
+                  </button>
+                )}
+
             </nav>
           </div>
         </div>
