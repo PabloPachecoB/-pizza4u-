@@ -4,9 +4,26 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import SearchBar from '../../components/SearchBar';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { useProducts } from '../../context/ProductsContext'; // ← INTEGRACIÓN CONTEXT
+import { useNotifications } from '../../context/NotificationContext';
 
 const MenuEditor = () => {
-  const [products, setProducts] = useState([]);
+  // Context integration - reemplaza estado local
+  const { 
+    products, 
+    loading, 
+    categories,
+    createProduct, 
+    updateProduct, 
+    deleteProduct, 
+    toggleProductAvailability,
+    searchProducts,
+    getProductsByCategory 
+  } = useProducts();
+
+  const { addNotification } = useNotifications();
+
+  // Estados locales solo para UI
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,136 +31,45 @@ const MenuEditor = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const categories = [
+  // Categorías con todas las del context más "all"
+  const allCategories = [
     { id: 'all', name: 'Todos', icon: 'fas fa-list' },
-    { id: 'pizzas', name: 'Pizzas', icon: 'fas fa-pizza-slice' },
-    { id: 'pastas', name: 'Pastas', icon: 'fas fa-utensils' },
-    { id: 'ensaladas', name: 'Ensaladas', icon: 'fas fa-leaf' },
-    { id: 'bebidas', name: 'Bebidas', icon: 'fas fa-glass-cheers' },
-    { id: 'postres', name: 'Postres', icon: 'fas fa-ice-cream' }
+    ...categories.map(cat => ({
+      id: cat,
+      name: cat.charAt(0).toUpperCase() + cat.slice(1),
+      icon: getCategoryIcon(cat)
+    }))
   ];
 
-  // Mock data para productos
-  const mockProducts = [
-    {
-      id: 1,
-      name: 'Pizza Margarita',
-      category: 'pizzas',
-      price: 45,
-      cost: 18,
-      image: '/pizza-margarita.jpg',
-      description: 'Salsa de tomate, mozzarella fresca, albahaca y aceite de oliva',
-      ingredients: ['Masa artesanal', 'Salsa de tomate', 'Mozzarella', 'Albahaca'],
-      allergens: ['Gluten', 'Lácteos'],
-      available: true,
-      featured: true,
-      preparationTime: '15-20 min',
-      nutritionInfo: { calories: 280, protein: 12, carbs: 35, fat: 10 },
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-15'
-    },
-    {
-      id: 2,
-      name: 'Pizza Pepperoni',
-      category: 'pizzas',
-      price: 52,
-      cost: 22,
-      image: '/pizza-pepperoni.jpg',
-      description: 'Salsa de tomate, mozzarella y pepperoni premium',
-      ingredients: ['Masa artesanal', 'Salsa de tomate', 'Mozzarella', 'Pepperoni'],
-      allergens: ['Gluten', 'Lácteos'],
-      available: true,
-      featured: false,
-      preparationTime: '15-20 min',
-      createdAt: '2024-01-05',
-      updatedAt: '2024-01-10'
-    },
-    {
-      id: 3,
-      name: 'Pasta Carbonara',
-      category: 'pastas',
-      price: 38,
-      cost: 15,
-      image: '/pasta-carbonara.jpg',
-      description: 'Pasta fresca con panceta, huevo, parmesano y pimienta negra',
-      ingredients: ['Pasta fresca', 'Panceta', 'Huevo', 'Parmesano'],
-      allergens: ['Gluten', 'Lácteos', 'Huevos'],
-      available: true,
-      featured: false,
-      preparationTime: '12-15 min',
-      createdAt: '2024-01-03',
-      updatedAt: '2024-01-08'
-    },
-    {
-      id: 4,
-      name: 'Ensalada César',
-      category: 'ensaladas',
-      price: 32,
-      cost: 12,
-      image: '/ensalada-cesar.jpg',
-      description: 'Lechuga romana, crutones, parmesano y aderezo césar',
-      ingredients: ['Lechuga romana', 'Crutones', 'Parmesano', 'Aderezo césar'],
-      allergens: ['Gluten', 'Lácteos'],
-      available: false,
-      featured: false,
-      preparationTime: '5-8 min',
-      createdAt: '2024-01-02',
-      updatedAt: '2024-01-14'
-    },
-    {
-      id: 5,
-      name: 'Coca Cola',
-      category: 'bebidas',
-      price: 8,
-      cost: 3,
-      image: '/coca-cola.jpg',
-      description: 'Bebida refrescante 355ml',
-      ingredients: ['Bebida carbonatada'],
-      allergens: [],
-      available: true,
-      featured: false,
-      preparationTime: 'Inmediato',
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01'
-    },
-    {
-      id: 6,
-      name: 'Tiramisu',
-      category: 'postres',
-      price: 25,
-      cost: 10,
-      image: '/tiramisu.jpg',
-      description: 'Postre italiano con café, mascarpone y cacao',
-      ingredients: ['Mascarpone', 'Café', 'Cacao', 'Galletas'],
-      allergens: ['Lácteos', 'Huevos', 'Gluten'],
-      available: true,
-      featured: true,
-      preparationTime: '5 min',
-      createdAt: '2024-01-04',
-      updatedAt: '2024-01-12'
+  function getCategoryIcon(category) {
+    const icons = {
+      pizzas: 'fas fa-pizza-slice',
+      pastas: 'fas fa-utensils',
+      ensaladas: 'fas fa-leaf',
+      bebidas: 'fas fa-glass-cheers',
+      postres: 'fas fa-ice-cream',
+      entradas: 'fas fa-appetizer'
+    };
+    return icons[category] || 'fas fa-utensils';
+  }
+
+  // Filtrar productos cuando cambian los filtros
+  useEffect(() => {
+    let filtered = [...products];
+
+    // Filtrar por categoría
+    if (selectedCategory !== 'all') {
+      filtered = getProductsByCategory(selectedCategory);
     }
-  ];
 
-  // Simular carga de datos
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setProducts(mockProducts);
-      setFilteredProducts(mockProducts);
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Filtrar productos
-  useEffect(() => {
-    let filtered = products.filter(product => {
-      const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           product.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
+    // Filtrar por búsqueda
+    if (searchQuery.trim()) {
+      filtered = searchProducts(searchQuery);
+      if (selectedCategory !== 'all') {
+        filtered = filtered.filter(product => product.category === selectedCategory);
+      }
+    }
 
     // Ordenar
     filtered.sort((a, b) => {
@@ -153,9 +79,9 @@ const MenuEditor = () => {
         case 'price-low':
           return a.price - b.price;
         case 'newest':
-          return new Date(b.createdAt) - new Date(a.createdAt);
+          return new Date(b.created_at) - new Date(a.created_at);
         case 'oldest':
-          return new Date(a.createdAt) - new Date(b.createdAt);
+          return new Date(a.created_at) - new Date(b.created_at);
         case 'name':
         default:
           return a.name.localeCompare(b.name);
@@ -163,7 +89,7 @@ const MenuEditor = () => {
     });
 
     setFilteredProducts(filtered);
-  }, [products, selectedCategory, searchQuery, sortBy]);
+  }, [products, selectedCategory, searchQuery, sortBy, searchProducts, getProductsByCategory]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-BO', {
@@ -173,6 +99,7 @@ const MenuEditor = () => {
   };
 
   const calculateMargin = (price, cost) => {
+    if (!cost) return '0.0';
     return (((price - cost) / price) * 100).toFixed(1);
   };
 
@@ -186,26 +113,28 @@ const MenuEditor = () => {
     setShowProductModal(true);
   };
 
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = async (productId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      setProducts(prev => prev.filter(p => p.id !== productId));
+      const result = await deleteProduct(productId);
+      if (result.success) {
+        // El context ya maneja las notificaciones
+        setSelectedProducts(prev => prev.filter(id => id !== productId));
+      }
     }
   };
 
-  const toggleProductAvailability = (productId) => {
-    setProducts(prev => prev.map(product => 
-      product.id === productId 
-        ? { ...product, available: !product.available }
-        : product
-    ));
+  const handleToggleAvailability = async (productId) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      await toggleProductAvailability(productId, !product.available);
+    }
   };
 
-  const toggleFeatured = (productId) => {
-    setProducts(prev => prev.map(product => 
-      product.id === productId 
-        ? { ...product, featured: !product.featured }
-        : product
-    ));
+  const handleToggleFeatured = async (productId) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      await updateProduct(productId, { featured: !product.featured });
+    }
   };
 
   const handleSelectProduct = (productId) => {
@@ -224,27 +153,31 @@ const MenuEditor = () => {
     }
   };
 
-  const handleBulkToggleAvailability = () => {
-    setProducts(prev => prev.map(product => 
-      selectedProducts.includes(product.id)
-        ? { ...product, available: !product.available }
-        : product
-    ));
+  const handleBulkToggleAvailability = async () => {
+    for (const productId of selectedProducts) {
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        await toggleProductAvailability(productId, !product.available);
+      }
+    }
     setSelectedProducts([]);
   };
 
-  const handleBulkToggleFeatured = () => {
-    setProducts(prev => prev.map(product => 
-      selectedProducts.includes(product.id)
-        ? { ...product, featured: !product.featured }
-        : product
-    ));
+  const handleBulkToggleFeatured = async () => {
+    for (const productId of selectedProducts) {
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        await updateProduct(productId, { featured: !product.featured });
+      }
+    }
     setSelectedProducts([]);
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (window.confirm(`¿Estás seguro de que quieres eliminar ${selectedProducts.length} productos?`)) {
-      setProducts(prev => prev.filter(product => !selectedProducts.includes(product.id)));
+      for (const productId of selectedProducts) {
+        await deleteProduct(productId);
+      }
       setSelectedProducts([]);
     }
   };
@@ -261,54 +194,75 @@ const MenuEditor = () => {
       preparationTime: '',
       available: true,
       featured: false,
-      image: ''
+      image_url: ''
     });
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
       if (editingProduct) {
         setFormData({
-          name: editingProduct.name,
-          category: editingProduct.category,
-          price: editingProduct.price.toString(),
-          cost: editingProduct.cost.toString(),
-          description: editingProduct.description,
+          name: editingProduct.name || '',
+          category: editingProduct.category || 'pizzas',
+          price: editingProduct.price?.toString() || '',
+          cost: editingProduct.cost?.toString() || '',
+          description: editingProduct.description || '',
           ingredients: editingProduct.ingredients || [],
           allergens: editingProduct.allergens || [],
-          preparationTime: editingProduct.preparationTime || '',
-          available: editingProduct.available,
-          featured: editingProduct.featured,
-          image: editingProduct.image || ''
+          preparationTime: editingProduct.preparation_time || '',
+          available: editingProduct.available ?? true,
+          featured: editingProduct.featured ?? false,
+          image_url: editingProduct.image_url || ''
+        });
+      } else {
+        // Reset form for new product
+        setFormData({
+          name: '',
+          category: 'pizzas',
+          price: '',
+          cost: '',
+          description: '',
+          ingredients: [],
+          allergens: [],
+          preparationTime: '',
+          available: true,
+          featured: false,
+          image_url: ''
         });
       }
     }, [editingProduct]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
+      setIsSubmitting(true);
       
       const productData = {
-        ...formData,
+        name: formData.name,
+        category: formData.category,
         price: parseFloat(formData.price),
-        cost: parseFloat(formData.cost),
-        updatedAt: new Date().toISOString().split('T')[0]
+        cost: formData.cost ? parseFloat(formData.cost) : null,
+        description: formData.description,
+        image_url: formData.image_url || null,
+        available: formData.available,
+        featured: formData.featured,
+        preparation_time: formData.preparationTime || null,
+        ingredients: formData.ingredients,
+        allergens: formData.allergens
       };
 
+      let result;
       if (editingProduct) {
-        setProducts(prev => prev.map(p => 
-          p.id === editingProduct.id 
-            ? { ...p, ...productData }
-            : p
-        ));
+        result = await updateProduct(editingProduct.id, productData);
       } else {
-        const newProduct = {
-          ...productData,
-          id: Date.now(),
-          createdAt: new Date().toISOString().split('T')[0]
-        };
-        setProducts(prev => [...prev, newProduct]);
+        result = await createProduct(productData);
       }
 
-      setShowProductModal(false);
-      setEditingProduct(null);
+      if (result.success) {
+        setShowProductModal(false);
+        setEditingProduct(null);
+      }
+      
+      setIsSubmitting(false);
     };
 
     return (
@@ -321,6 +275,7 @@ const MenuEditor = () => {
             <button
               onClick={() => setShowProductModal(false)}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2"
+              disabled={isSubmitting}
             >
               <i className="fas fa-times text-xl" />
             </button>
@@ -339,6 +294,7 @@ const MenuEditor = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -351,10 +307,11 @@ const MenuEditor = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   required
+                  disabled={isSubmitting}
                 >
-                  {categories.filter(cat => cat.id !== 'all').map(category => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
+                  {categories.map(category => (
+                    <option key={category} value={category}>
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
                     </option>
                   ))}
                 </select>
@@ -370,24 +327,27 @@ const MenuEditor = () => {
                 <input
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.price}
                   onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Costo (Bs.) *
+                  Costo (Bs.)
                 </label>
                 <input
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.cost}
                   onChange={(e) => setFormData(prev => ({ ...prev, cost: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  required
+                  disabled={isSubmitting}
                 />
                 {formData.price && formData.cost && (
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -408,7 +368,37 @@ const MenuEditor = () => {
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                 required
+                disabled={isSubmitting}
               />
+            </div>
+
+            {/* Image URL */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                URL de Imagen
+              </label>
+              <div className="space-y-2">
+                <input
+                  type="url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                  disabled={isSubmitting}
+                />
+                {formData.image_url && (
+                  <div className="mt-2">
+                    <img
+                      src={formData.image_url}
+                      alt="Vista previa"
+                      className="w-32 h-32 object-cover rounded-lg border"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Preparation Time */}
@@ -422,75 +412,8 @@ const MenuEditor = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, preparationTime: e.target.value }))}
                 placeholder="Ej: 15-20 min"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                disabled={isSubmitting}
               />
-            </div>
-
-            {/* Image URL */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                URL de Imagen
-              </label>
-              <div className="space-y-2">
-                <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                />
-                {formData.image && (
-                  <div className="mt-2">
-                    <img
-                      src={formData.image}
-                      alt="Vista previa"
-                      className="w-32 h-32 object-cover rounded-lg border"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Ingredients */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Ingredientes
-              </label>
-              <textarea
-                value={formData.ingredients.join(', ')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  ingredients: e.target.value.split(',').map(i => i.trim()).filter(i => i)
-                }))}
-                placeholder="Masa artesanal, Salsa de tomate, Mozzarella..."
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Separa los ingredientes con comas
-              </p>
-            </div>
-
-            {/* Allergens */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Alérgenos
-              </label>
-              <textarea
-                value={formData.allergens.join(', ')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  allergens: e.target.value.split(',').map(a => a.trim()).filter(a => a)
-                }))}
-                placeholder="Gluten, Lácteos, Huevos..."
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Separa los alérgenos con comas
-              </p>
             </div>
 
             {/* Checkboxes */}
@@ -501,6 +424,7 @@ const MenuEditor = () => {
                   checked={formData.available}
                   onChange={(e) => setFormData(prev => ({ ...prev, available: e.target.checked }))}
                   className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
+                  disabled={isSubmitting}
                 />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                   Disponible para venta
@@ -513,6 +437,7 @@ const MenuEditor = () => {
                   checked={formData.featured}
                   onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
                   className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
+                  disabled={isSubmitting}
                 />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                   Producto destacado
@@ -526,12 +451,15 @@ const MenuEditor = () => {
                 type="button"
                 variant="outline"
                 onClick={() => setShowProductModal(false)}
+                disabled={isSubmitting}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 variant="primary"
+                loading={isSubmitting}
+                disabled={isSubmitting}
               >
                 {editingProduct ? 'Actualizar' : 'Crear'} Producto
               </Button>
@@ -542,7 +470,7 @@ const MenuEditor = () => {
     );
   };
 
-  if (isLoading) {
+  if (loading) {
     return <LoadingSpinner fullScreen text="Cargando productos..." />;
   }
 
@@ -635,7 +563,7 @@ const MenuEditor = () => {
 
               {/* Category Filter */}
               <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
+                {allCategories.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
@@ -697,24 +625,27 @@ const MenuEditor = () => {
             <Card className="p-8 text-center">
               <i className="fas fa-utensils text-4xl text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                No se encontraron productos
+                {products.length === 0 ? 'No hay productos' : 'No se encontraron productos'}
               </h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">
-                Intenta con otros términos de búsqueda
+                {products.length === 0 
+                  ? 'Comienza agregando tu primer producto al menú'
+                  : 'Intenta con otros términos de búsqueda'
+                }
               </p>
               <Button
                 variant="primary"
                 onClick={handleAddProduct}
                 icon="fas fa-plus"
               >
-                Agregar Primer Producto
+                {products.length === 0 ? 'Agregar Primer Producto' : 'Nuevo Producto'}
               </Button>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <Card key={product.id} className="overflow-hidden">
-                  <div className="relative">
+                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="relative group">
                     {/* Selection checkbox */}
                     <div className="absolute top-2 left-2 z-10">
                       <input
@@ -726,7 +657,7 @@ const MenuEditor = () => {
                     </div>
 
                     <img
-                      src={product.image}
+                      src={product.image_url || '/placeholder-food.jpg'}
                       alt={product.name}
                       className="w-full h-48 object-cover"
                       onError={(e) => {
@@ -751,7 +682,7 @@ const MenuEditor = () => {
                     {/* Quick Actions */}
                     <div className="absolute bottom-2 right-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => toggleProductAvailability(product.id)}
+                        onClick={() => handleToggleAvailability(product.id)}
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm ${
                           product.available ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'
                         }`}
@@ -761,7 +692,7 @@ const MenuEditor = () => {
                       </button>
                       
                       <button
-                        onClick={() => toggleFeatured(product.id)}
+                        onClick={() => handleToggleFeatured(product.id)}
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm ${
                           product.featured ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-500 hover:bg-gray-600'
                         }`}
@@ -778,31 +709,13 @@ const MenuEditor = () => {
                         {product.name}
                       </h3>
                       <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-400 text-xs px-2 py-1 rounded-full">
-                        {categories.find(cat => cat.id === product.category)?.name}
+                        {product.category}
                       </span>
                     </div>
 
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
                       {product.description}
                     </p>
-
-                    {/* Ingredients & Allergens */}
-                    {product.ingredients.length > 0 && (
-                      <div className="mb-2">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          <strong>Ingredientes:</strong> {product.ingredients.slice(0, 3).join(', ')}
-                          {product.ingredients.length > 3 && '...'}
-                        </p>
-                      </div>
-                    )}
-
-                    {product.allergens.length > 0 && (
-                      <div className="mb-3">
-                        <p className="text-xs text-orange-600 dark:text-orange-400">
-                          <strong>Alérgenos:</strong> {product.allergens.join(', ')}
-                        </p>
-                      </div>
-                    )}
 
                     {/* Price Info */}
                     <div className="space-y-2 mb-4">
@@ -812,23 +725,27 @@ const MenuEditor = () => {
                           {formatCurrency(product.price)}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Costo:</span>
-                        <span className="text-gray-900 dark:text-white">
-                          {formatCurrency(product.cost)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Margen:</span>
-                        <span className="font-semibold text-green-600 dark:text-green-400">
-                          {calculateMargin(product.price, product.cost)}%
-                        </span>
-                      </div>
-                      {product.preparationTime && (
+                      {product.cost && (
+                        <>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600 dark:text-gray-400">Costo:</span>
+                            <span className="text-gray-900 dark:text-white">
+                              {formatCurrency(product.cost)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600 dark:text-gray-400">Margen:</span>
+                            <span className="font-semibold text-green-600 dark:text-green-400">
+                              {calculateMargin(product.price, product.cost)}%
+                            </span>
+                          </div>
+                        </>
+                      )}
+                      {product.preparation_time && (
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600 dark:text-gray-400">Tiempo:</span>
                           <span className="text-gray-900 dark:text-white">
-                            {product.preparationTime}
+                            {product.preparation_time}
                           </span>
                         </div>
                       )}

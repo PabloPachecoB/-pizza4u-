@@ -4,10 +4,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 // Contexts
 import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
-import { AuthProvider, useAuth } from './context/AuthContext'; // ← AGREGADO useAuth
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { AppProvider } from './context/AppContext';
+import { ProductsProvider } from './context/ProductsContext'; // ← NUEVO
+import { VideosProvider } from './context/VideosContext';     // ← NUEVO
 
 // Components
 import SEO from './components/SEO';
@@ -118,33 +120,37 @@ const AuthDebug = () => {
   return null;
 };
 
-// Main App Component
+// Main App Component - CON NUEVOS PROVIDERS
 function App() {
   return (
     <ThemeProvider>
       <NotificationProvider>
         <AuthProvider>
-          <CartProvider>
-            <FavoritesProvider>
-              <AppProvider>
-                <Router>
-                  <SEO />
-                  <AuthDebug />
-                  <div id="app" className="antialiased">
-                    <Suspense fallback={<LoadingSpinner size="lg" variant="spinner" fullScreen />}>
-                      <Routes>
-                        {/* User Routes */}
-                        <Route path="/*" element={<UserRoutes />} />
-                        
-                        {/* Admin Routes - SIN ProtectedRoute por ahora para debug */}
-                        <Route path="/admin/*" element={<AdminRoutes />} />
-                      </Routes>
-                    </Suspense>
-                  </div>
-                </Router>
-              </AppProvider>
-            </FavoritesProvider>
-          </CartProvider>
+          <ProductsProvider>    {/* ← NUEVO PROVIDER */}
+            <VideosProvider>    {/* ← NUEVO PROVIDER */}
+              <CartProvider>
+                <FavoritesProvider>
+                  <AppProvider>
+                    <Router>
+                      <SEO />
+                      <AuthDebug />
+                      <div id="app" className="antialiased">
+                        <Suspense fallback={<LoadingSpinner size="lg" variant="spinner" fullScreen />}>
+                          <Routes>
+                            {/* User Routes */}
+                            <Route path="/*" element={<UserRoutes />} />
+                            
+                            {/* Admin Routes - SIN ProtectedRoute por ahora para debug */}
+                            <Route path="/admin/*" element={<AdminRoutes />} />
+                          </Routes>
+                        </Suspense>
+                      </div>
+                    </Router>
+                  </AppProvider>
+                </FavoritesProvider>
+              </CartProvider>
+            </VideosProvider>
+          </ProductsProvider>
         </AuthProvider>
       </NotificationProvider>
     </ThemeProvider>
