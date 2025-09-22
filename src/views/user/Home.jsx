@@ -9,6 +9,9 @@ import Card from '../../components/Card';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import FavoriteButton from '../../components/FavoriteButton';
 
+const getAssetPath = (p = '') =>
+  `${import.meta.env.BASE_URL}${String(p).replace(/^\//, '')}`;
+
 const Home = () => {
   const navigate = useNavigate();
   const { addItem } = useCart();
@@ -180,38 +183,25 @@ const Home = () => {
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, []);
 
   // Auto-cambio de slides del hero
   useEffect(() => {
     if (loading) return;
-
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
-
     return () => clearInterval(interval);
-  }, [heroSlides.length, loading]);
+  }, [loading]);
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('es-BO', {
-      style: 'currency',
-      currency: 'BOB'
-    }).format(price);
-  };
+  const formatPrice = (price) =>
+    new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(price);
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'long'
-    });
-  };
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
 
-  const handleAddToCart = (product) => {
-    addItem(product);
-  };
+  const handleAddToCart = (product) => addItem(product);
 
   const handleToggleFavorite = (product) => {
     toggleFavorite({
@@ -222,17 +212,10 @@ const Home = () => {
     });
   };
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-  };
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
-  };
-
-  if (loading) {
-    return <LoadingSpinner fullScreen text="Cargando..." />;
-  }
+  if (loading) return <LoadingSpinner fullScreen text="Cargando..." />;
 
   return (
     <>
@@ -244,89 +227,87 @@ const Home = () => {
       
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Hero Section con Carousel */}
-        <section className="relative h-screen overflow-hidden">
-          {heroSlides.map((slide, index) => (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 transition-transform duration-1000 ease-in-out ${
-                index === currentSlide ? 'translate-x-0' : 
-                index < currentSlide ? '-translate-x-full' : 'translate-x-full'
-              }`}
-            >
-              {/* Background Image */}
-              <div className="absolute inset-0">
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = '/placeholder-hero.jpg';
-                  }}
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-40" />
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-600/20 to-transparent" />
-              </div>
-
-              {/* Content */}
-              <div className="relative h-full flex items-center">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="max-w-3xl">
-                    <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-6 animate-fade-in">
-                      {slide.title}
-                    </h1>
-                    <h2 className="text-xl md:text-2xl font-medium text-white/90 mb-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                      {slide.subtitle}
-                    </h2>
-                    <p className="text-lg text-white/80 mb-8 max-w-2xl animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                      {slide.description}
-                    </p>
-                    <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
-                      <Button
-                        size="lg"
-                        variant="primary"
-                        onClick={slide.buttonAction}
-                        icon={slide.buttonIcon}
-                        className="bg-white text-primary-600 hover:bg-gray-100 shadow-xl"
-                      >
-                        {slide.buttonText}
-                      </Button>
-                    </div>
-                  </div>
+        <section className="relative h-[75vh] md:h-screen overflow-hidden bg-black">
+          {/* Slides */}
+          <div className="absolute inset-0">
+            {heroSlides.map((slide, index) => {
+              const isActive = index === currentSlide;
+              return (
+                <div
+                  key={slide.id}
+                  className={`absolute inset-0 transition-opacity duration-700 ease-out ${
+                    isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                  }`}
+                  aria-hidden={!isActive}
+                >
+                  <img
+                    src={getAssetPath(slide.image)}
+                    alt={slide.title}
+                    className="w-full h-full object-cover select-none"
+                    draggable="false"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = getAssetPath('/placeholder-hero.jpg');
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/40" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary-600/20 to-transparent" />
                 </div>
+              );
+            })}
+          </div>
+
+          {/* Content */}
+          <div className="relative z-20 h-full flex items-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="max-w-3xl">
+                <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-6">
+                  {heroSlides[currentSlide].title}
+                </h1>
+                <h2 className="text-xl md:text-2xl font-medium text-white/90 mb-4">
+                  {heroSlides[currentSlide].subtitle}
+                </h2>
+                <p className="text-lg text-white/80 mb-8 max-w-2xl">
+                  {heroSlides[currentSlide].description}
+                </p>
+                <Button
+                  size="lg"
+                  variant="primary"
+                  onClick={heroSlides[currentSlide].buttonAction}
+                  icon={heroSlides[currentSlide].buttonIcon}
+                  className="bg-white text-primary-600 hover:bg-gray-100 shadow-xl"
+                >
+                  {heroSlides[currentSlide].buttonText}
+                </Button>
               </div>
             </div>
-          ))}
+          </div>
 
-          {/* Navigation Arrows */}
+          {/* Flechas */}
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-200"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-3 rounded-full transition-all"
           >
             <i className="fas fa-chevron-left" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-200"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-3 rounded-full transition-all"
           >
             <i className="fas fa-chevron-right" />
           </button>
 
-          {/* Slide Indicators */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {heroSlides.map((_, index) => (
+          {/* Indicadores */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+            {heroSlides.map((_, i) => (
               <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentSlide ? 'bg-white' : 'bg-white/50'
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                className={`w-3 h-3 rounded-full transition ${
+                  i === currentSlide ? 'bg-white' : 'bg-white/50'
                 }`}
               />
             ))}
-          </div>
-
-          {/* Scroll Indicator */}
-          <div className="absolute bottom-8 right-8 text-white animate-bounce">
-            <i className="fas fa-chevron-down text-2xl" />
           </div>
         </section>
 
