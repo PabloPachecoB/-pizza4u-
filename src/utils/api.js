@@ -293,7 +293,7 @@ export const mockApi = {
         category: 'pizzas',
         price: 45,
         description: 'Salsa de tomate, mozzarella fresca y albahaca',
-        image: '/pizza-margarita.jpg',
+        image: '/pizza-margarita.png',
         available: true
       }
       // ... more items
