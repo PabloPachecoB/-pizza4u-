@@ -192,11 +192,10 @@ const Header = ({ variant = 'user' }) => {
                 </button>
               )}
 
-              {/* Admin Access Button - SIEMPRE VISIBLE */}
-              <div className="block">
-                {isAuthenticated && user?.role === 'admin' ? (
-                  // Usuario admin logueado
-                  variant === 'user' ? (
+              {/* Admin Panel Button - Solo para usuarios admin logueados */}
+              {isAuthenticated && user?.role === 'admin' && (
+                <div className="block">
+                  {variant === 'user' ? (
                     <Button
                       variant="secondary"
                       size="md"
@@ -215,20 +214,9 @@ const Header = ({ variant = 'user' }) => {
                     >
                       Sitio Web
                     </Button>
-                  )
-                ) : (
-    // Acceso directo al admin (sin estar logueado)
-    <Button
-      variant="secondary"
-      size="md"
-      onClick={() => navigate('/admin')}
-      icon="fas fa-cog"
-      className="pizza-btn-primary"
-    >
-      ADMIN
-    </Button>
-  )}
-</div>
+                  )}
+                </div>
+              )}
 
               {/* User Menu */}
               <div className="relative user-menu">

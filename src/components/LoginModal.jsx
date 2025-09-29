@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { validationUtils } from '../utils/helpers';
@@ -20,6 +21,7 @@ const LoginModal = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
+  const navigate = useNavigate();
   const { login, register, requestPasswordReset, loading, showLoginModal, setShowLoginModal } = useAuth();
   const { addNotification } = useNotifications();
 
@@ -160,6 +162,14 @@ const LoginModal = () => {
             username: formData.email,
             password: formData.password
           });
+          
+          // Si el login fue exitoso y es admin, redirigir al dashboard
+          if (result && result.success) {
+            closeModal();
+            if (result.isAdmin) {
+              navigate('/admin');
+            }
+          }
           break;
 
         case 'register':
@@ -169,6 +179,10 @@ const LoginModal = () => {
             password: formData.password,
             phone: formData.phone
           });
+          
+          if (result && result.success) {
+            closeModal();
+          }
           break;
 
         case 'forgot-password':
@@ -182,10 +196,6 @@ const LoginModal = () => {
             setMode('login');
           }
           break;
-      }
-
-      if (result && result.success) {
-        closeModal();
       }
     } catch (error) {
       console.error('Auth error:', error);

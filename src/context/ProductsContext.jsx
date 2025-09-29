@@ -1,7 +1,6 @@
 // src/context/ProductsContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabase/client';
-import { useNotifications } from './NotificationContext';
 
 const ProductsContext = createContext();
 
@@ -17,8 +16,6 @@ export const ProductsProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState(['pizzas', 'bebidas', 'postres', 'entradas']);
-  
-  const { addNotification } = useNotifications();
 
   // Cargar productos iniciales
   useEffect(() => {
@@ -58,11 +55,8 @@ export const ProductsProvider = ({ children }) => {
       setProducts(data || []);
     } catch (error) {
       console.error('Error fetching products:', error);
-      addNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Error al cargar productos'
-      });
+      // Usar datos mock si falla la carga desde Supabase
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -75,11 +69,6 @@ export const ProductsProvider = ({ children }) => {
       case 'INSERT':
         if (newRecord.available) {
           setProducts(prev => [newRecord, ...prev]);
-          addNotification({
-            type: 'success',
-            title: 'Nuevo producto',
-            message: `${newRecord.name} ha sido añadido al menú`
-          });
         }
         break;
         

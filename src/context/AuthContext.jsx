@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNotifications } from './NotificationContext';
-import { authService } from '../supabase/client';
+import { authService, supabase, profileService } from '../supabase/client';
 
 const AuthContext = createContext();
 
@@ -29,18 +29,11 @@ export const AuthProvider = ({ children }) => {
         console.log('Auth state changed:', event, session);
         
         if (session?.user) {
-          // Usuario logueado con Supabase
-          setUser({
-            id: session.user.id,
-            email: session.user.email,
-            name: session.user.user_metadata?.name || session.user.email.split('@')[0],
-            role: session.user.user_metadata?.role || 'user',
-            avatar: session.user.user_metadata?.avatar_url || session.user.email.charAt(0).toUpperCase()
-          });
-          setIsAuthenticated(true);
+          // Usuario logueado con Supabase - obtener datos completos del perfil
+          await loadUserProfile(session.user);
         } else {
-          // Verificar si hay admin mock
-          checkMockAdmin();
+          // No hay sesión activa
+          setLoading(false);
         }
         setLoading(false);
       }
@@ -51,43 +44,76 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  // Cargar datos completos del perfil desde la base de datos
+  const loadUserProfile = async (supabaseUser) => {
+    try {
+      // Intentar obtener datos del perfil desde la tabla 'profiles'
+      const { data: profile, error } = await profileService.getProfile(supabaseUser.id);
+
+      if (error || !profile) {
+        console.log('Profile not found, using auth data:', error);
+        // Si no hay perfil en la tabla, usar datos básicos de auth
+        setUser({
+          id: supabaseUser.id,
+          email: supabaseUser.email,
+          name: supabaseUser.user_metadata?.name || supabaseUser.email.split('@')[0],
+          role: 'user', // role por defecto
+          avatar: supabaseUser.email.charAt(0).toUpperCase()
+        });
+      } else {
+        // Usar datos del perfil de la base de datos
+        setUser({
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+          role: profile.role || 'user',
+          phone: profile.phone,
+          avatar: profile.name ? profile.name.charAt(0).toUpperCase() : profile.email.charAt(0).toUpperCase(),
+          created_at: profile.created_at
+        });
+      }
+      
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+      // Fallback a datos básicos si falla
+      setUser({
+        id: supabaseUser.id,
+        email: supabaseUser.email,
+        name: supabaseUser.user_metadata?.name || supabaseUser.email.split('@')[0],
+        role: 'user',
+        avatar: supabaseUser.email.charAt(0).toUpperCase()
+      });
+      setIsAuthenticated(true);
+    }
+  };
+
   const checkSession = async () => {
     try {
+      // Verificar admin mock primero (más rápido)
+      const mockAdmin = localStorage.getItem('mockAdmin');
+      if (mockAdmin) {
+        try {
+          const userData = JSON.parse(mockAdmin);
+          setUser(userData);
+          setIsAuthenticated(true);
+          setLoading(false);
+          return;
+        } catch (error) {
+          localStorage.removeItem('mockAdmin');
+        }
+      }
+
       // Verificar sesión de Supabase
       const { session } = await authService.getCurrentSession();
       
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          name: session.user.user_metadata?.name || session.user.email.split('@')[0],
-          role: session.user.user_metadata?.role || 'user',
-          avatar: session.user.user_metadata?.avatar_url || session.user.email.charAt(0).toUpperCase()
-        });
-        setIsAuthenticated(true);
-      } else {
-        // Verificar admin mock
-        checkMockAdmin();
+        await loadUserProfile(session.user);
       }
     } catch (error) {
       console.error('Error checking session:', error);
-      checkMockAdmin();
     } finally {
       setLoading(false);
-    }
-  };
-
-  const checkMockAdmin = () => {
-    // Verificar si hay admin mock guardado
-    const mockAdmin = localStorage.getItem('mockAdmin');
-    if (mockAdmin) {
-      try {
-        const userData = JSON.parse(mockAdmin);
-        setUser(userData);
-        setIsAuthenticated(true);
-      } catch (error) {
-        localStorage.removeItem('mockAdmin');
-      }
     }
   };
 
@@ -118,7 +144,7 @@ export const AuthProvider = ({ children }) => {
           message: 'Has iniciado sesión como administrador'
         });
         
-        return { success: true, user: userData };
+        return { success: true, user: userData, isAdmin: true };
       }
 
       // Login real con Supabase
@@ -136,15 +162,24 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error };
       }
 
+      // Cargar perfil completo del usuario
+      await loadUserProfile(data.user);
+
       setShowLoginModal(false);
       
+      // Verificar si el usuario es admin para mensaje personalizado
+      const { data: profile } = await profileService.getProfile(data.user.id);
+      const isAdmin = profile?.role === 'admin';
+
       addNotification({
         type: 'success',
-        title: 'Bienvenido',
-        message: `Hola ${data.user.email}, sesión iniciada correctamente`
+        title: isAdmin ? 'Bienvenido Administrador' : 'Bienvenido',
+        message: isAdmin 
+          ? 'Acceso al panel administrativo concedido' 
+          : `Hola ${data.user.email}, sesión iniciada correctamente`
       });
 
-      return { success: true, user: data.user };
+      return { success: true, user: data.user, isAdmin };
 
     } catch (error) {
       console.error('Login error:', error);

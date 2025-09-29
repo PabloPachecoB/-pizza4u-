@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 // Contexts
 import { ThemeProvider } from './context/ThemeContext';
-import { NotificationProvider } from './context/NotificationContext';
+import { NotificationProvider, useNotifications } from './context/NotificationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { FavoritesProvider } from './context/FavoritesContext';
@@ -44,19 +44,6 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import LoginModal from './components/LoginModal';
 import CartSidebar from './components/CartSidebar';
-
-// Protected Route Component - CORREGIDO
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, user } = useAuth();
-  
-  console.log('ProtectedRoute - isAuthenticated:', isAuthenticated, 'user:', user); // Debug
-  
-  if (!isAuthenticated || user?.role !== 'admin') {
-    return <Navigate to="/" replace />;
-  }
-  
-  return children;
-};
 
 // Main App Layout
 const AppLayout = ({ children, variant = 'user' }) => {
@@ -120,32 +107,78 @@ const AuthDebug = () => {
   return null;
 };
 
+// Protected Route Component - Dentro de los contextos
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, user, loading } = useAuth();
+  const { addNotification } = useNotifications();
+  
+  console.log('ProtectedRoute - isAuthenticated:', isAuthenticated, 'user:', user, 'loading:', loading);
+  
+  // Mostrar spinner mientras carga
+  if (loading) {
+    return <LoadingSpinner size="lg" variant="spinner" fullScreen />;
+  }
+  
+  // Si no está autenticado, redirigir y mostrar mensaje
+  if (!isAuthenticated) {
+    addNotification({
+      type: 'warning',
+      title: 'Acceso denegado',
+      message: 'Debes iniciar sesión para acceder al panel de administración'
+    });
+    return <Navigate to="/" replace />;
+  }
+  
+  // Si no es admin, redirigir y mostrar mensaje
+  if (user?.role !== 'admin') {
+    addNotification({
+      type: 'error',
+      title: 'Acceso restringido',
+      message: 'No tienes permisos de administrador para acceder a esta sección'
+    });
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+};
+
+// App Content Component - Para tener acceso a todos los contextos
+const AppContent = () => {
+  return (
+    <Router>
+      <SEO />
+      <AuthDebug />
+      <div id="app" className="antialiased">
+        <Suspense fallback={<LoadingSpinner size="lg" variant="spinner" fullScreen />}>
+          <Routes>
+            {/* User Routes */}
+            <Route path="/*" element={<UserRoutes />} />
+            
+            {/* Admin Routes - Protegidas por autenticación y rol */}
+            <Route path="/admin/*" element={
+              <ProtectedRoute>
+                <AdminRoutes />
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </Suspense>
+      </div>
+    </Router>
+  );
+};
+
 // Main App Component - CON NUEVOS PROVIDERS
 function App() {
   return (
     <ThemeProvider>
       <NotificationProvider>
         <AuthProvider>
-          <ProductsProvider>    {/* ← NUEVO PROVIDER */}
-            <VideosProvider>    {/* ← NUEVO PROVIDER */}
+          <ProductsProvider>
+            <VideosProvider>
               <CartProvider>
                 <FavoritesProvider>
                   <AppProvider>
-                    <Router>
-                      <SEO />
-                      <AuthDebug />
-                      <div id="app" className="antialiased">
-                        <Suspense fallback={<LoadingSpinner size="lg" variant="spinner" fullScreen />}>
-                          <Routes>
-                            {/* User Routes */}
-                            <Route path="/*" element={<UserRoutes />} />
-                            
-                            {/* Admin Routes - SIN ProtectedRoute por ahora para debug */}
-                            <Route path="/admin/*" element={<AdminRoutes />} />
-                          </Routes>
-                        </Suspense>
-                      </div>
-                    </Router>
+                    <AppContent />
                   </AppProvider>
                 </FavoritesProvider>
               </CartProvider>

@@ -109,3 +109,76 @@ export const authService = {
     return supabase.auth.onAuthStateChange(callback)
   }
 }
+
+// Funciones para trabajar con profiles
+export const profileService = {
+  // Obtener perfil de usuario
+  async getProfile(userId) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      return { data: null, error: error.message };
+    }
+  },
+
+  // Crear perfil de usuario (se ejecuta automáticamente con trigger)
+  async createProfile(userId, profileData) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: userId,
+            ...profileData
+          }
+        ])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      return { data: null, error: error.message };
+    }
+  },
+
+  // Actualizar perfil
+  async updateProfile(userId, updates) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      return { data: null, error: error.message };
+    }
+  },
+
+  // Verificar si usuario es admin
+  async isAdmin(userId) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+      
+      if (error) throw error;
+      return { isAdmin: data?.role === 'admin', error: null };
+    } catch (error) {
+      return { isAdmin: false, error: error.message };
+    }
+  }
+}
